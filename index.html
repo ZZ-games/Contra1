@@ -1,11 +1,28 @@
-index.html
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Contra</title>
-  </head>
-  <body>
-    <h1>Contra ROM</h1>
-    <p>If you see this page, GitHub Pages is working.</p>
-  </body>
+<head>
+  <meta charset="UTF-8">
+  <title>Contra NES</title>
+  <script src="https://cdn.jsdelivr.net/npm/jsnes/dist/jsnes.min.js"></script>
+</head>
+<body>
+  <h1>Contra NES</h1>
+  <canvas id="nes-canvas" width="256" height="240"></canvas>
+  <script>
+    const nes = new jsnes.NES({
+      onFrame: function(frameBuffer) {
+        const canvas = document.getElementById('nes-canvas');
+        const ctx = canvas.getContext('2d');
+        const imgData = ctx.getImageData(0, 0, 256, 240);
+        imgData.data.set(frameBuffer);
+        ctx.putImageData(imgData, 0, 0);
+      }
+    });
+
+    // Load the ROM
+    fetch('contra.nes')  // The ROM file in your GitHub repo
+      .then(resp => resp.arrayBuffer())
+      .then(buffer => nes.loadROM(new Uint8Array(buffer)));
+  </script>
+</body>
 </html>
