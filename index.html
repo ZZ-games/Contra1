@@ -4,25 +4,44 @@
   <meta charset="UTF-8">
   <title>Contra NES</title>
   <script src="https://cdn.jsdelivr.net/npm/jsnes/dist/jsnes.min.js"></script>
+  <style>
+    body { background: #000; color: #fff; text-align:center; font-family: sans-serif; }
+    canvas { image-rendering: pixelated; margin-top: 10px; }
+  </style>
 </head>
 <body>
   <h1>Contra NES</h1>
   <canvas id="nes-canvas" width="256" height="240"></canvas>
+  <p>Use arrow keys + Z/X to play</p>
+
   <script>
+    const canvas = document.getElementById('nes-canvas');
+    const ctx = canvas.getContext('2d');
+    const imageData = ctx.getImageData(0, 0, 256, 240);
+
     const nes = new jsnes.NES({
       onFrame: function(frameBuffer) {
-        const canvas = document.getElementById('nes-canvas');
-        const ctx = canvas.getContext('2d');
-        const imgData = ctx.getImageData(0, 0, 256, 240);
-        imgData.data.set(frameBuffer);
-        ctx.putImageData(imgData, 0, 0);
-      }
+        for (let i = 0; i < frameBuffer.length; i++) {
+          imageData.data[i] = frameBuffer[i];
+        }
+        ctx.putImageData(imageData, 0, 0);
+      },
+      onAudioSample: function() {} // audio placeholder
     });
 
-    // Load the ROM
-    fetch('contra.nes')  // The ROM file in your GitHub repo
+    // Use encodeURIComponent for spaces and parentheses in the filename
+    fetch(encodeURIComponent('Contra (USA).nes'))
       .then(resp => resp.arrayBuffer())
       .then(buffer => nes.loadROM(new Uint8Array(buffer)));
+
+    // Keyboard controls
+    const keyMap = {
+      38: 'UP', 40: 'DOWN', 37: 'LEFT', 39: 'RIGHT',
+      90: 'A', 88: 'B', 13: 'START', 16: 'SELECT'
+    };
+
+    window.addEventListener('keydown', e => nes.buttonDown(1, keyMap[e.keyCode]));
+    window.addEventListener('keyup', e => nes.buttonUp(1, keyMap[e.keyCode]));
   </script>
 </body>
 </html>
